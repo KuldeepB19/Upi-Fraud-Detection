@@ -1,5 +1,6 @@
 import streamlit as st
 import plotly.graph_objects as go
+import pandas as pd
 import sys, os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -35,26 +36,77 @@ if artifacts is None:
     artifacts = load_artifacts()
     st.success("✅ Models trained and ready!")
 
+# ── Pre-fill session state defaults ──────────────────────────────────────────
+if 'ex_amount' not in st.session_state:
+    st.session_state.ex_amount = 5000.0
+if 'ex_hour' not in st.session_state:
+    st.session_state.ex_hour = 14
+if 'ex_location' not in st.session_state:
+    st.session_state.ex_location = LOCATIONS[0]
+if 'ex_new_device' not in st.session_state:
+    st.session_state.ex_new_device = False
+if 'ex_failed' not in st.session_state:
+    st.session_state.ex_failed = 0
+if 'ex_txn_type' not in st.session_state:
+    st.session_state.ex_txn_type = TRANSACTION_TYPES[0]
+if 'ex_sender_bank' not in st.session_state:
+    st.session_state.ex_sender_bank = BANKS[0]
+if 'ex_receiver_bank' not in st.session_state:
+    st.session_state.ex_receiver_bank = BANKS[0]
+
 # ── Layout ────────────────────────────────────────────────────────────────────
 left, right = st.columns([1, 1], gap="large")
 
 with left:
     st.markdown("### 📝 Transaction Details")
 
+    # ── Try example buttons ───────────────────────────────────────────────────
+    btn1, btn2 = st.columns(2)
+    with btn1:
+        if st.button("🚨 Try Fraud Example", use_container_width=True):
+            st.session_state.ex_amount       = 87000.0
+            st.session_state.ex_hour         = 2
+            st.session_state.ex_location     = "Unknown"
+            st.session_state.ex_new_device   = True
+            st.session_state.ex_failed       = 3
+            st.session_state.ex_txn_type     = "P2P"
+            st.session_state.ex_sender_bank  = BANKS[0]
+            st.session_state.ex_receiver_bank= BANKS[1]
+            st.rerun()
+    with btn2:
+        if st.button("✅ Try Legit Example", use_container_width=True):
+            st.session_state.ex_amount       = 1500.0
+            st.session_state.ex_hour         = 11
+            st.session_state.ex_location     = "Mumbai"
+            st.session_state.ex_new_device   = False
+            st.session_state.ex_failed       = 0
+            st.session_state.ex_txn_type     = "Bill Payment"
+            st.session_state.ex_sender_bank  = BANKS[0]
+            st.session_state.ex_receiver_bank= BANKS[0]
+            st.rerun()
+
+    st.write("")
+
     col1, col2 = st.columns(2)
     with col1:
         amount = st.number_input("💰 Amount (₹)", min_value=1.0, max_value=500000.0,
-                                  value=5000.0, step=100.0)
-        location = st.selectbox("📍 Location", LOCATIONS)
-        sender_bank = st.selectbox("🏛️ Sender Bank", BANKS)
-        is_new_device = st.toggle("📱 New / Unknown Device", value=False)
+                                  value=st.session_state.ex_amount, step=100.0)
+        location = st.selectbox("📍 Location", LOCATIONS,
+                                  index=LOCATIONS.index(st.session_state.ex_location))
+        sender_bank = st.selectbox("🏛️ Sender Bank", BANKS,
+                                    index=BANKS.index(st.session_state.ex_sender_bank))
+        is_new_device = st.toggle("📱 New / Unknown Device",
+                                    value=st.session_state.ex_new_device)
 
     with col2:
-        hour = st.slider("🕐 Hour of Day", 0, 23, 14,
+        hour = st.slider("🕐 Hour of Day", 0, 23, st.session_state.ex_hour,
                           help="0 = midnight, 14 = 2pm")
-        txn_type = st.selectbox("🔄 Transaction Type", TRANSACTION_TYPES)
-        receiver_bank = st.selectbox("🏛️ Receiver Bank", BANKS)
-        failed_attempts = st.slider("⚠️ Failed PIN Attempts", 0, 4, 0)
+        txn_type = st.selectbox("🔄 Transaction Type", TRANSACTION_TYPES,
+                                  index=TRANSACTION_TYPES.index(st.session_state.ex_txn_type))
+        receiver_bank = st.selectbox("🏛️ Receiver Bank", BANKS,
+                                      index=BANKS.index(st.session_state.ex_receiver_bank))
+        failed_attempts = st.slider("⚠️ Failed PIN Attempts", 0, 4,
+                                     st.session_state.ex_failed)
 
     st.write("")
     model_choice = st.radio("🤖 Model", ["Both (Recommended)", "Random Forest only", "XGBoost only"],
@@ -150,7 +202,6 @@ with right:
 if 'history' in st.session_state and st.session_state.history:
     st.divider()
     st.markdown("### 🕓 Session History")
-    import pandas as pd
     hist_df = pd.DataFrame(st.session_state.history[::-1])
     st.dataframe(hist_df, use_container_width=True)
     if st.button("🗑️ Clear History"):

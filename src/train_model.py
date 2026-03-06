@@ -85,7 +85,7 @@ def train(csv_path='data/transactions.csv', models_dir='models'):
         scale = (y_train == 0).sum() / (y_train == 1).sum()
         xgb = XGBClassifier(
             n_estimators=100, max_depth=6, learning_rate=0.1,
-            scale_pos_weight=scale, use_label_encoder=False,
+            scale_pos_weight=scale,
             eval_metric='logloss', random_state=42, verbosity=0
         )
         xgb.fit(X_train, y_train)
