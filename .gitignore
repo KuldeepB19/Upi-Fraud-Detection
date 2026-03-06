@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+.DS_Store
+
+# Keep models in repo for easy demo (remove lines below if you want to retrain fresh)
+# models/*.pkl
+
+# Large data files (regenerated on first run)
+data/transactions.csv
+
+# Streamlit secrets
+.streamlit/secrets.toml
