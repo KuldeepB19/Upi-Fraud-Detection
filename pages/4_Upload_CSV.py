@@ -140,11 +140,8 @@ if st.button("🚀 Run Fraud Detection on All Rows", type="primary", use_contain
     show_cols = [c for c in show_cols if c in display.columns]
 
     st.dataframe(
-        display[show_cols].style.apply(
-            lambda row: ['color:#e74c3c;font-weight:600'
-                         if row.get('verdict') == '🚨 FRAUD' else '' for _ in row], axis=1
-        ),
-        use_container_width=True, height=450
+    display[show_cols],
+    use_container_width=True, height=450
     )
 
     # Download results
