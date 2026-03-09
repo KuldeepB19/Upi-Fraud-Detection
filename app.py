@@ -78,7 +78,7 @@ fraud_df = df[df['is_fraud'] == 1]
 legit_df = df[df['is_fraud'] == 0]
 
 # ── Header ────────────────────────────────────────────────────────────────────
-st.markdown("## 🛡️ UPI Fraud Detection — Dashboard")
+st.markdown("##  UPI Fraud Detection — Dashboard")
 st.caption(f"Showing {len(df):,} transactions · Filters applied")
 st.divider()
 
